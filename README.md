@@ -39,7 +39,7 @@ The MQ-135 and DHT11 sensors collect environmental data such as gas concentratio
 - Indoor air quality monitoring
 
 ## Code
-The ESP8266 code for sensor data acquisition and processing is available in the `code/` folder.
+The ESP8266 code for sensor data acquisition and processing is available in the `air_monitoring.ino` folder.
 
 ## Output
 The system successfully monitors environmental parameters and displays real-time values on the LCD. It can also transmit data wirelessly for remote monitoring applications.
