@@ -1,138 +1,67 @@
-#include <Wire.h>
-#include <LiquidCrystal_I2C.h>
+#include <ESP8266WiFi.h>
+#include <DHT.h>
 
-// ✅ LCD Setup (I2C address: 0x27)
-LiquidCrystal_I2C lcd(0x27, 16, 2);
+// ----------- Pin Definitions -----------
+#define DHTPIN D4        // DHT11 data pin
+#define DHTTYPE DHT11
+#define MQ135_PIN A0     // Analog pin for MQ-135
 
-// ✅ Pin Definitions
-#define BUTTON1 D1  // GPIO5
-#define BUTTON2 D2  // GPIO4
-#define BUTTON3 D5  // GPIO14
-#define BUTTON4 D6  // GPIO12
-#define RESET_BUTTON D0  // GPIO16
+// ----------- Initialize Sensors -----------
+DHT dht(DHTPIN, DHTTYPE);
 
-#define LED1 D7  // GPIO13
-#define LED2 D8  // GPIO15
-#define LED3 D3  // GPIO0
-#define LED4 D4  // GPIO2
-#define RESET_LED D0  // GPIO16 (Same as RESET_BUTTON)
-#define BUZZER D7  // GPIO13 (Shared with LED1)
+// ----------- Variables -----------
+float temperature;
+float humidity;
+int airQuality;
 
-int votes[4] = {0, 0, 0, 0};  // Vote counters
-
-// ✅ Function to make a beep sound
-void beepBuzzer() {
-  digitalWrite(BUZZER, HIGH);
-  delay(100);
-  digitalWrite(BUZZER, LOW);
-}
-
-// ✅ Function to display votes on LCD
-void displayVotes() {
-  lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("C1:");
-  lcd.print(votes[0]);
-  lcd.print(" C2:");
-  lcd.print(votes[1]);
-  lcd.setCursor(0, 1);
-  lcd.print("C3:");
-  lcd.print(votes[2]);
-  lcd.print(" C4:");
-  lcd.print(votes[3]);
-}
-
-// ✅ Setup function
+// ----------- Setup -----------
 void setup() {
-  Serial.begin(115200);
-  
-  // ✅ Initialize LCD
-  lcd.init();
-  lcd.backlight();
-  lcd.setCursor(0, 0);
-  lcd.print("Voting Machine");
-  delay(2000);
-  lcd.clear();
+  Serial.begin(9600);
+  dht.begin();
 
-  // ✅ Set button pins as INPUT_PULLUP
-  pinMode(BUTTON1, INPUT_PULLUP);
-  pinMode(BUTTON2, INPUT_PULLUP);
-  pinMode(BUTTON3, INPUT_PULLUP);
-  pinMode(BUTTON4, INPUT_PULLUP);
-  pinMode(RESET_BUTTON, INPUT_PULLUP);
-
-  // ✅ Set LED and buzzer pins as OUTPUT
-  pinMode(LED1, OUTPUT);
-  pinMode(LED2, OUTPUT);
-  pinMode(LED3, OUTPUT);
-  pinMode(LED4, OUTPUT);
-  pinMode(RESET_LED, OUTPUT);
-  pinMode(BUZZER, OUTPUT);
-
-  // ✅ Ensure all LEDs and buzzer are OFF initially
-  digitalWrite(LED1, LOW);
-  digitalWrite(LED2, LOW);
-  digitalWrite(LED3, LOW);
-  digitalWrite(LED4, LOW);
-  digitalWrite(RESET_LED, LOW);
-  digitalWrite(BUZZER, LOW);
-  
-  displayVotes();  // Show initial vote counts
+  Serial.println("Air Quality Monitoring System Started...");
 }
 
-// ✅ Main Loop - Voting Logic
+// ----------- Loop -----------
 void loop() {
-  // ✅ Button 1 Pressed
-  if (digitalRead(BUTTON1) == LOW) {
-    votes[0]++;
-    digitalWrite(LED1, HIGH);
-    beepBuzzer();
-    delay(500);
-    digitalWrite(LED1, LOW);
-    displayVotes();
+  // Read DHT11
+  humidity = dht.readHumidity();
+  temperature = dht.readTemperature();
+
+  // Read MQ-135
+  airQuality = analogRead(MQ135_PIN);
+
+  // Check if DHT reading failed
+  if (isnan(humidity) || isnan(temperature)) {
+    Serial.println("Failed to read from DHT sensor!");
+    return;
   }
 
-  // ✅ Button 2 Pressed
-  if (digitalRead(BUTTON2) == LOW) {
-    votes[1]++;
-    digitalWrite(LED2, HIGH);
-    beepBuzzer();
-    delay(500);
-    digitalWrite(LED2, LOW);
-    displayVotes();
+  // Display Readings
+  Serial.println("----- Sensor Data -----");
+  Serial.print("Temperature: ");
+  Serial.print(temperature);
+  Serial.println(" °C");
+
+  Serial.print("Humidity: ");
+  Serial.print(humidity);
+  Serial.println(" %");
+
+  Serial.print("Air Quality (Analog): ");
+  Serial.println(airQuality);
+
+  // Basic Air Quality Status
+  if (airQuality < 300) {
+    Serial.println("Air Quality: GOOD");
+  } 
+  else if (airQuality < 600) {
+    Serial.println("Air Quality: MODERATE");
+  } 
+  else {
+    Serial.println("Air Quality: POOR");
   }
 
-  // ✅ Button 3 Pressed
-  if (digitalRead(BUTTON3) == LOW) {
-    votes[2]++;
-    digitalWrite(LED3, HIGH);
-    beepBuzzer();
-    delay(500);
-    digitalWrite(LED3, LOW);
-    displayVotes();
-  }
+  Serial.println("------------------------\n");
 
-  // ✅ Button 4 Pressed
-  if (digitalRead(BUTTON4) == LOW) {
-    votes[3]++;
-    digitalWrite(LED4, HIGH);
-    beepBuzzer();
-    delay(500);
-    digitalWrite(LED4, LOW);
-    displayVotes();
-  }
-
-  // ✅ Reset Button Pressed
-  if (digitalRead(RESET_BUTTON) == LOW) {
-    for (int i = 0; i < 4; i++) {
-      votes[i] = 0;
-    }
-    digitalWrite(RESET_LED, HIGH);
-    beepBuzzer();
-    delay(1000);
-    digitalWrite(RESET_LED, LOW);
-    displayVotes();
-  }
-
-  delay(100);  // Small delay for stability
+  delay(2000); // 2 sec delay
 }
