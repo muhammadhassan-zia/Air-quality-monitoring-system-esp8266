@@ -48,4 +48,4 @@ The system successfully monitors environmental parameters and displays real-time
 ![Circuit](Circuit-diagram.jfif)
 
 ## Hardware Setup
-![Setup](images/hardware.jfif)
+![Setup](Hardware.jfif)
