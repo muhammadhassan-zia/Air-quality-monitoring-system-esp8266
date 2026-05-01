@@ -45,7 +45,7 @@ The ESP8266 code for sensor data acquisition and processing is available in the 
 The system successfully monitors environmental parameters and displays real-time values on the LCD. It can also transmit data wirelessly for remote monitoring applications.
 
 ## Circuit Diagram
-![Circuit](images/circuit-diagram.jfif)
+![Circuit](Circuit-diagram.jfif)
 
 ## Hardware Setup
 ![Setup](images/hardware.jfif)
