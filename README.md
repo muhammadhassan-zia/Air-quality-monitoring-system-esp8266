@@ -31,7 +31,6 @@ The sensors collect environmental data which is processed by the ESP8266 microco
 - Environmental analysis
 
 ## Output
-(Add your images below)
 
 ## Circuit Diagram
 ![Circuit](Circuit-diagram.jfif)
